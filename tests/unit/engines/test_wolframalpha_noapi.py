@@ -9,6 +9,8 @@ from searx.testing import SearxTestCase
 class TestWolframAlphaNoAPIEngine(SearxTestCase):
 
     def test_request(self):
+        mocked_obtain_token = wolframalpha_noapi
+        mocked_obtain_token.obtain_token = mock.MagicMock(return_value='test_token')
         query = 'test_query'
         dicto = defaultdict(dict)
         params = wolframalpha_noapi.request(query, dicto)
