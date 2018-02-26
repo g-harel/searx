@@ -4,11 +4,33 @@ import mock
 from requests import Request
 from searx.engines import wolframalpha_noapi
 from searx.testing import SearxTestCase
+from searx.poolrequests import get as http_get
 
 
 class TestWolframAlphaNoAPIEngine(SearxTestCase):
 
+    #test for obtain_token, currently not working/getting error
+    def test_obtain_token(self):
+        referer_url = 'referer_url'
+        request = Request(headers={'Referer': referer_url})
+        json = r'''
+        { "code" : "2ae5b37a9a8f326c4c2cddf8414c06d4",
+            "timestamp" : 1519508656443
+        }
+        '''
+        #poolrequests = searx.poolrequests
+        http_get = mock.MagicMock(return_value = json)
+
+        response = mock.Mock(text=json, request=request)
+        result = wolframalpha_noapi.obtain_token()
+        self.assertEqual(result['value'],'2ae5b37a9a8f326c4c2cddf8414c06d4')
+        self.assertEqual(result['last_updated'],'')
+
     def test_request(self):
+
+        mocked_obtain_token = wolframalpha_noapi
+        mocked_obtain_token.obtain_token = mock.MagicMock(return_value='test_token')
+
         query = 'test_query'
         dicto = defaultdict(dict)
         params = wolframalpha_noapi.request(query, dicto)
