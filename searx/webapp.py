@@ -41,6 +41,7 @@ except:
     logger.critical("cannot import dependency: pygments")
     from sys import exit
     exit(1)
+from searx import DatabaseHandler
 from cgi import escape
 from datetime import datetime, timedelta
 from werkzeug.contrib.fixers import ProxyFix
@@ -456,6 +457,18 @@ def index_error(output_format, error_message):
             'index.html',
         )
 
+@app.route('/trending', methods=['GET'])
+def trending():
+
+    db = DatabaseHandler.TinyDatabase()
+    db.connect()
+    results = db.load_all()
+
+    return render(
+        'trending.html',
+        results=results,
+      )
+
 
 @app.route('/search', methods=['GET', 'POST'])
 @app.route('/', methods=['GET', 'POST'])
@@ -478,6 +491,12 @@ def index():
             )
         else:
             return index_error(output_format, 'No query'), 400
+
+    db = DatabaseHandler.TinyDatabase()
+    db.connect()
+    db.prepare_data({'query':request.form.get('q'),
+                    'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+    db.insert()
 
     # search
     search_query = None
