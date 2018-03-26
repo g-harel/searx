@@ -1,10 +1,11 @@
 from tinydb import TinyDB, Query
+from pymongo import MongoClient
 
 
 class Database(object):
     def __init__(self):
         self.data = None
-        self.db   = None
+        self.db = None
 
     def insert(self):
         self.db.insert(self.data)
@@ -22,15 +23,14 @@ class Database(object):
 class TinyDatabase(Database):
     def connect(self):
         self.db = TinyDB('./db.json')
-        User = Query()
+        self.User = Query()
 
 
 class MongoDatabase(Database):
     def connect(self):
-        pass
+        self.User = MongoClient(
+            "mongodb://user123:password123@ds249398.mlab.com:49398/searx").searx
+        self.db = self.User.trending
 
-
-
-
-
-
+    def load_all(self):
+        return self.db.find({})

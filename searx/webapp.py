@@ -37,7 +37,7 @@ try:
     from pygments import highlight
     from pygments.lexers import get_lexer_by_name
     from pygments.formatters import HtmlFormatter
-except:
+except BaseException:
     logger.critical("cannot import dependency: pygments")
     from sys import exit
     exit(1)
@@ -54,8 +54,11 @@ from flask.json import jsonify
 from searx import settings, searx_dir, searx_debug
 from searx.exceptions import SearxParameterException
 from searx.engines import (
-    categories, engines, engine_shortcuts, get_engines_stats, initialize_engines
-)
+    categories,
+    engines,
+    engine_shortcuts,
+    get_engines_stats,
+    initialize_engines)
 from searx.utils import (
     UnicodeWriter, highlight_content, html_to_text, get_resources_directory,
     get_static_files, get_result_templates, get_themes, gen_useragent,
@@ -83,7 +86,7 @@ except ImportError:
 
 try:
     from cStringIO import StringIO
-except:
+except BaseException:
     from io import StringIO
 
 
@@ -95,16 +98,19 @@ else:
 
 # serve pages with HTTP/1.1
 from werkzeug.serving import WSGIRequestHandler
-WSGIRequestHandler.protocol_version = "HTTP/{}".format(settings['server'].get('http_protocol_version', '1.0'))
+WSGIRequestHandler.protocol_version = "HTTP/{}".format(
+    settings['server'].get('http_protocol_version', '1.0'))
 
 # about static
-static_path = get_resources_directory(searx_dir, 'static', settings['ui']['static_path'])
+static_path = get_resources_directory(
+    searx_dir, 'static', settings['ui']['static_path'])
 logger.debug('static directory is %s', static_path)
 static_files = get_static_files(static_path)
 
 # about templates
 default_theme = settings['ui']['default_theme']
-templates_path = get_resources_directory(searx_dir, 'templates', settings['ui']['templates_path'])
+templates_path = get_resources_directory(
+    searx_dir, 'templates', settings['ui']['templates_path'])
 logger.debug('templates directory is %s', templates_path)
 themes = get_themes(templates_path)
 result_templates = get_result_templates(templates_path)
@@ -178,7 +184,7 @@ def code_highlighter(codelines, language=None):
     try:
         # find lexer by programing language
         lexer = get_lexer_by_name(language, stripall=True)
-    except:
+    except BaseException:
         # if lexer is not found, using default one
         logger.debug('highlighter cannot find lexer for {0}'.format(language))
         lexer = get_lexer_by_name('text', stripall=True)
@@ -245,7 +251,8 @@ def get_current_theme_name(override=None):
 
     if override and (override in themes or override == '__common__'):
         return override
-    theme_name = request.args.get('theme', request.preferences.get_value('theme'))
+    theme_name = request.args.get(
+        'theme', request.preferences.get_value('theme'))
     if theme_name not in themes:
         theme_name = default_theme
     return theme_name
@@ -261,7 +268,8 @@ def get_result_template(theme, template_name):
 def url_for_theme(endpoint, override_theme=None, **values):
     if endpoint == 'static' and values.get('filename'):
         theme_name = get_current_theme_name(override=override_theme)
-        filename_with_theme = "themes/{}/{}".format(theme_name, values['filename'])
+        filename_with_theme = "themes/{}/{}".format(
+            theme_name, values['filename'])
         if filename_with_theme in static_files:
             values['filename'] = filename_with_theme
     return url_for(endpoint, **values)
@@ -359,7 +367,8 @@ def render(template_name, override_theme=None, **kwargs):
 
     kwargs['image_proxify'] = image_proxify
 
-    kwargs['proxify'] = proxify if settings.get('result_proxy', {}).get('url') else None
+    kwargs['proxify'] = proxify if settings.get(
+        'result_proxy', {}).get('url') else None
 
     kwargs['get_result_template'] = get_result_template
 
@@ -373,7 +382,8 @@ def render(template_name, override_theme=None, **kwargs):
 
     kwargs['instance_name'] = settings['general']['instance_name']
 
-    kwargs['results_on_new_tab'] = request.preferences.get_value('results_on_new_tab')
+    kwargs['results_on_new_tab'] = request.preferences.get_value(
+        'results_on_new_tab')
 
     kwargs['unicode'] = unicode
 
@@ -397,12 +407,18 @@ def render(template_name, override_theme=None, **kwargs):
 def pre_request():
     request.errors = []
 
-    preferences = Preferences(themes, list(categories.keys()), engines, plugins)
+    preferences = Preferences(
+        themes,
+        list(
+            categories.keys()),
+        engines,
+        plugins)
     request.preferences = preferences
     try:
         preferences.parse_dict(request.cookies)
-    except:
-        request.errors.append(gettext('Invalid settings, please edit your preferences'))
+    except BaseException:
+        request.errors.append(
+            gettext('Invalid settings, please edit your preferences'))
 
     # merge GET, POST vars
     # request.form
@@ -457,9 +473,11 @@ def index_error(output_format, error_message):
             'index.html',
         )
 
+
 @app.route('/trending', methods=['GET'])
 def trending():
 
+    # db = DatabaseHandler.MongoDatabase()
     db = DatabaseHandler.TinyDatabase()
     db.connect()
     results = db.load_all()
@@ -467,7 +485,7 @@ def trending():
     return render(
         'trending.html',
         results=results,
-      )
+    )
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -492,17 +510,24 @@ def index():
         else:
             return index_error(output_format, 'No query'), 400
 
+    # db = DatabaseHandler.MongoDatabase()
+    # db.connect()
+    # db.prepare_data({'query': request.form.get('q'),
+    #                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+    # db.insert()
+
     db = DatabaseHandler.TinyDatabase()
     db.connect()
-    db.prepare_data({'query':request.form.get('q'),
-                    'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+    db.prepare_data({'query': request.form.get('q'),
+                     'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
     db.insert()
 
     # search
     search_query = None
     result_container = None
     try:
-        search_query = get_search_query_from_webapp(request.preferences, request.form)
+        search_query = get_search_query_from_webapp(
+            request.preferences, request.form)
         # search = Search(search_query) #  without plugins
         search = SearchWithPlugins(search_query, request.user_plugins, request)
         result_container = search.search()
@@ -529,45 +554,63 @@ def index():
     for result in results:
         if output_format == 'html':
             if 'content' in result and result['content']:
-                result['content'] = highlight_content(escape(result['content'][:1024]), search_query.query)
-            result['title'] = highlight_content(escape(result['title'] or u''), search_query.query)
+                result['content'] = highlight_content(
+                    escape(result['content'][:1024]), search_query.query)
+            result['title'] = highlight_content(
+                escape(result['title'] or u''), search_query.query)
         else:
             if result.get('content'):
                 result['content'] = html_to_text(result['content']).strip()
             # removing html content and whitespace duplications
-            result['title'] = ' '.join(html_to_text(result['title']).strip().split())
+            result['title'] = ' '.join(
+                html_to_text(
+                    result['title']).strip().split())
 
         result['pretty_url'] = prettify_url(result['url'])
 
         # TODO, check if timezone is calculated right
         if 'publishedDate' in result:
             try:  # test if publishedDate >= 1900 (datetime module bug)
-                result['pubdate'] = result['publishedDate'].strftime('%Y-%m-%d %H:%M:%S%z')
+                result['pubdate'] = result['publishedDate'].strftime(
+                    '%Y-%m-%d %H:%M:%S%z')
             except ValueError:
                 result['publishedDate'] = None
             else:
-                if result['publishedDate'].replace(tzinfo=None) >= datetime.now() - timedelta(days=1):
-                    timedifference = datetime.now() - result['publishedDate'].replace(tzinfo=None)
+                if result['publishedDate'].replace(
+                        tzinfo=None) >= datetime.now() - timedelta(days=1):
+                    timedifference = datetime.now(
+                    ) - result['publishedDate'].replace(tzinfo=None)
                     minutes = int((timedifference.seconds / 60) % 60)
                     hours = int(timedifference.seconds / 60 / 60)
                     if hours == 0:
-                        result['publishedDate'] = gettext(u'{minutes} minute(s) ago').format(minutes=minutes)
+                        result['publishedDate'] = gettext(
+                            u'{minutes} minute(s) ago').format(minutes=minutes)
                     else:
                         result['publishedDate'] = gettext(u'{hours} hour(s), {minutes} minute(s) ago').format(hours=hours, minutes=minutes)  # noqa
                 else:
-                    result['publishedDate'] = format_date(result['publishedDate'])
+                    result['publishedDate'] = format_date(
+                        result['publishedDate'])
 
     if output_format == 'json':
-        return Response(json.dumps({'query': search_query.query.decode('utf-8'),
-                                    'number_of_results': number_of_results,
-                                    'results': results,
-                                    'answers': list(result_container.answers),
-                                    'corrections': list(result_container.corrections),
-                                    'infoboxes': result_container.infoboxes,
-                                    'suggestions': list(result_container.suggestions),
-                                    'unresponsive_engines': list(result_container.unresponsive_engines)},
-                                   default=lambda item: list(item) if isinstance(item, set) else item),
-                        mimetype='application/json')
+        return Response(
+            json.dumps(
+                {
+                    'query': search_query.query.decode('utf-8'),
+                    'number_of_results': number_of_results,
+                    'results': results,
+                    'answers': list(
+                        result_container.answers),
+                    'corrections': list(
+                        result_container.corrections),
+                    'infoboxes': result_container.infoboxes,
+                    'suggestions': list(
+                        result_container.suggestions),
+                    'unresponsive_engines': list(
+                        result_container.unresponsive_engines)},
+                default=lambda item: list(item) if isinstance(
+                    item,
+                    set) else item),
+            mimetype='application/json')
     elif output_format == 'csv':
         csv = UnicodeWriter(StringIO())
         keys = ('title', 'url', 'content', 'host', 'engine', 'score')
@@ -577,7 +620,8 @@ def index():
             csv.writerow([row.get(key, '') for key in keys])
         csv.stream.seek(0)
         response = Response(csv.stream.read(), mimetype='application/csv')
-        cont_disp = 'attachment;Filename=searx_-_{0}.csv'.format(search_query.query)
+        cont_disp = 'attachment;Filename=searx_-_{0}.csv'.format(
+            search_query.query)
         response.headers.add('Content-Disposition', cont_disp)
         return response
     elif output_format == 'rss':
@@ -630,9 +674,15 @@ def autocompleter():
 
     # parse query
     if PY3:
-        raw_text_query = RawTextQuery(request.form.get('q', b''), disabled_engines)
+        raw_text_query = RawTextQuery(
+            request.form.get(
+                'q', b''), disabled_engines)
     else:
-        raw_text_query = RawTextQuery(request.form.get('q', u'').encode('utf-8'), disabled_engines)
+        raw_text_query = RawTextQuery(
+            request.form.get(
+                'q',
+                u'').encode('utf-8'),
+            disabled_engines)
     raw_text_query.parse_query()
 
     # check if search query is set
@@ -640,7 +690,8 @@ def autocompleter():
         return '', 400
 
     # run autocompleter
-    completer = autocomplete_backends.get(request.preferences.get_value('autocomplete'))
+    completer = autocomplete_backends.get(
+        request.preferences.get_value('autocomplete'))
 
     # parse searx specific autocompleter results like !bang
     raw_results = searx_bang(raw_text_query)
@@ -654,7 +705,10 @@ def autocompleter():
         else:
             language = language.split('-')[0]
         # run autocompletion
-        raw_results.extend(completer(raw_text_query.getSearchQuery(), language))
+        raw_results.extend(
+            completer(
+                raw_text_query.getSearchQuery(),
+                language))
 
     # parse results (write :language and !engine back to result string)
     results = []
@@ -679,11 +733,16 @@ def preferences():
 
     # save preferences
     if request.method == 'POST':
-        resp = make_response(redirect(urljoin(settings['server']['base_url'], url_for('index'))))
+        resp = make_response(
+            redirect(
+                urljoin(
+                    settings['server']['base_url'],
+                    url_for('index'))))
         try:
             request.preferences.parse_form(request.form)
         except ValidationException:
-            request.errors.append(gettext('Invalid settings, please edit your preferences'))
+            request.errors.append(
+                gettext('Invalid settings, please edit your preferences'))
             return resp
         return request.preferences.save(resp)
 
@@ -707,7 +766,8 @@ def preferences():
     # get first element [0], the engine time,
     # and then the second element [1] : the time (the first one is the label)
     for engine_stat in get_engines_stats()[0][1]:
-        stats[engine_stat.get('name')]['time'] = round(engine_stat.get('avg'), 3)
+        stats[engine_stat.get('name')]['time'] = round(
+            engine_stat.get('avg'), 3)
         if engine_stat.get('avg') > settings['outgoing']['request_timeout']:
             stats[engine_stat.get('name')]['warn_time'] = True
     # end of stats
@@ -718,14 +778,17 @@ def preferences():
                   image_proxy=image_proxy,
                   engines_by_category=categories,
                   stats=stats,
-                  answerers=[{'info': a.self_info(), 'keywords': a.keywords} for a in Answerers(file_loader).get()],
+                  answerers=[{'info': a.self_info(),
+                              'keywords': a.keywords} for a in Answerers(file_loader).get()],
                   disabled_engines=disabled_engines,
                   autocomplete_backends=autocomplete_backends,
-                  shortcuts={y: x for x, y in engine_shortcuts.items()},
+                  shortcuts={y: x for x,
+                             y in engine_shortcuts.items()},
                   themes=themes,
                   plugins=plugins,
                   doi_resolvers=settings['doi_resolvers'],
-                  current_doi_resolver=get_doi_resolver(request.args, request.preferences.get_value('doi_resolver')),
+                  current_doi_resolver=get_doi_resolver(request.args,
+                                                        request.preferences.get_value('doi_resolver')),
                   allowed_plugins=allowed_plugins,
                   theme=get_current_theme_name(),
                   preferences_url_params=request.preferences.get_as_url_params(),
@@ -745,7 +808,9 @@ def image_proxy():
     if h != request.args.get('h'):
         return '', 400
 
-    headers = dict_subset(request.headers, {'If-Modified-Since', 'If-None-Match'})
+    headers = dict_subset(
+        request.headers, {
+            'If-Modified-Since', 'If-None-Match'})
     headers['User-Agent'] = gen_useragent()
 
     resp = requests.get(url,
@@ -758,13 +823,15 @@ def image_proxy():
         return '', resp.status_code
 
     if resp.status_code != 200:
-        logger.debug('image-proxy: wrong response code: {0}'.format(resp.status_code))
+        logger.debug(
+            'image-proxy: wrong response code: {0}'.format(resp.status_code))
         if resp.status_code >= 400:
             return '', resp.status_code
         return '', 400
 
     if not resp.headers.get('content-type', '').startswith('image/'):
-        logger.debug('image-proxy: wrong content-type: {0}'.format(resp.headers.get('content-type')))
+        logger.debug(
+            'image-proxy: wrong content-type: {0}'.format(resp.headers.get('content-type')))
         return '', 400
 
     img = b''
@@ -776,9 +843,14 @@ def image_proxy():
             return '', 502  # Bad gateway - file is too big (>5M)
         img += chunk
 
-    headers = dict_subset(resp.headers, {'Content-Length', 'Length', 'Date', 'Last-Modified', 'Expires', 'Etag'})
+    headers = dict_subset(
+        resp.headers, {
+            'Content-Length', 'Length', 'Date', 'Last-Modified', 'Expires', 'Etag'})
 
-    return Response(img, mimetype=resp.headers['content-type'], headers=headers)
+    return Response(
+        img,
+        mimetype=resp.headers['content-type'],
+        headers=headers)
 
 
 @app.route('/stats', methods=['GET'])
@@ -838,7 +910,11 @@ def favicon():
 
 @app.route('/clear_cookies')
 def clear_cookies():
-    resp = make_response(redirect(urljoin(settings['server']['base_url'], url_for('index'))))
+    resp = make_response(
+        redirect(
+            urljoin(
+                settings['server']['base_url'],
+                url_for('index'))))
     for cookie_name in request.cookies:
         resp.delete_cookie(cookie_name)
     return resp
@@ -882,7 +958,10 @@ def page_not_found(e):
 
 
 def run():
-    logger.debug('starting webserver on %s:%s', settings['server']['port'], settings['server']['bind_address'])
+    logger.debug(
+        'starting webserver on %s:%s',
+        settings['server']['port'],
+        settings['server']['bind_address'])
     app.run(
         debug=searx_debug,
         use_debugger=searx_debug,
