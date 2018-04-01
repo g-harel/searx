@@ -35,11 +35,14 @@ class TinyDatabase(Database):
         tinydb_results = tinydb.load_all()
 
         for result in tinydb_results:
-            query = result.get('query')
-            time = result.get('time')
-
-            mongodb.prepare_data({'query': query, 'time': time})
+            mongodb.prepare_data(self.forklift_prepare_data(result))
             mongodb.insert()
+
+    def forklift_prepare_data(self, result):
+        query = result.get('query')
+        time = result.get('time')
+
+        return {'query': query, 'time': time}
 
 class MongoDatabase(Database):
     def connect(self):
