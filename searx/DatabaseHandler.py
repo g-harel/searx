@@ -34,3 +34,21 @@ class MongoDatabase(Database):
 
     def load_all(self):
         return self.db.find({})
+
+    def forklift(self):
+        mongodb = MongoDatabase()
+        tinydb  = TinyDatabase()
+
+        mongodb.connect()
+        tinydb.connect()
+
+        mongo_results = mongodb.load_all()
+
+        for result in mongo_results:
+            query = result.get('query')
+            time = result.get('time')
+
+            tinydb.prepare_data({'query': query, 'time': time})
+            tinydb.insert()
+
+

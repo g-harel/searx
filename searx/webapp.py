@@ -477,10 +477,12 @@ def index_error(output_format, error_message):
 @app.route('/trending', methods=['GET'])
 def trending():
 
-    # db = DatabaseHandler.MongoDatabase()
-    db = DatabaseHandler.TinyDatabase()
+    db = DatabaseHandler.MongoDatabase()
+    # db = DatabaseHandler.TinyDatabase()
     db.connect()
     results = db.load_all()
+
+    db.forklift()
 
     return render(
         'trending.html',
