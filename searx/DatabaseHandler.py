@@ -32,6 +32,8 @@ class TinyDatabase(Database):
         tinydb.connect()
         mongodb.connect()
 
+        mongodb.delete_all()
+
         tinydb_results = tinydb.load_all()
 
         for result in tinydb_results:
@@ -52,4 +54,7 @@ class MongoDatabase(Database):
 
     def load_all(self):
         return self.db.find({})
+
+    def delete_all(self):
+        self.db.delete_many({})
 
