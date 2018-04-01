@@ -25,6 +25,21 @@ class TinyDatabase(Database):
         self.db = TinyDB('./db.json')
         self.User = Query()
 
+    def forklift(self):
+        tinydb  = TinyDatabase()
+        mongodb = MongoDatabase()
+
+        tinydb.connect()
+        mongodb.connect()
+
+        tinydb_results = tinydb.load_all()
+
+        for result in tinydb_results:
+            query = result.get('query')
+            time = result.get('time')
+
+            mongodb.prepare_data({'query': query, 'time': time})
+            mongodb.insert()
 
 class MongoDatabase(Database):
     def connect(self):
@@ -34,21 +49,4 @@ class MongoDatabase(Database):
 
     def load_all(self):
         return self.db.find({})
-
-    def forklift(self):
-        mongodb = MongoDatabase()
-        tinydb  = TinyDatabase()
-
-        mongodb.connect()
-        tinydb.connect()
-
-        mongo_results = mongodb.load_all()
-
-        for result in mongo_results:
-            query = result.get('query')
-            time = result.get('time')
-
-            tinydb.prepare_data({'query': query, 'time': time})
-            tinydb.insert()
-
 
