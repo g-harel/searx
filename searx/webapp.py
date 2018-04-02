@@ -507,7 +507,7 @@ def topten():
 
     db = DatabaseHandler.TinyDatabase()
     db.connect()
-    results = db.load_duplicates_count()
+    results = db.return_topten()
     print(results)
     return render(
         'topten.html',

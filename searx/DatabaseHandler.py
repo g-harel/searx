@@ -1,5 +1,6 @@
 from tinydb import TinyDB, Query
 from pymongo import MongoClient
+from collections import Counter
 
 class Database(object):
     def __init__(self):
@@ -52,11 +53,14 @@ class TinyDatabase(Database):
         results = self.load_all()
         queries = []
         for result in results:
-            queries.append(result.get('query'))
-        something = {}   
-        for query in [ele for ind, ele in enumerate(queries,1) if ele not in queries[ind:]]:
-            something[query] = queries.count(query)
+            queries.append(result.get('query').encode("utf-8"))
+        something = {}
+        something = Counter(queries)
         return something
+
+    def return_topten(self):
+        data = self.load_duplicates_count().most_common(10)
+        return data
 
     def search(self ,name):
         return self.db.search(self.User.query == name)

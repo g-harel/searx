@@ -8,10 +8,10 @@
     </tr>
   </thead>
    <tbody>
-   {% for key,value in results.items() %}
+   {% for x in results %}
     <tr>
-        <td>{{key}}</td>
-        <td>{{value}}</td>
+        <td>{{x[0]}}</td>
+        <td>{{x[1]}}</td>
     </tr>
     {% endfor %}
    </tbody>
