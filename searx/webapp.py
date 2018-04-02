@@ -502,6 +502,16 @@ def trending():
         results=results,
     )
 
+@app.route('/topten', methods=['GET'])
+def topten():
+
+    db = DatabaseHandler.TinyDatabase()
+    db.connect()
+    results = db.load_duplicates_count()
+    print(results)
+    return render(
+        'topten.html',
+        results=results)
 
 @app.route('/search', methods=['GET', 'POST'])
 @app.route('/', methods=['GET', 'POST'])

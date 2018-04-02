@@ -48,6 +48,16 @@ class TinyDatabase(Database):
     def load_all(self):
         return self.db.all()
 
+    def load_duplicates_count(self):
+        results = self.load_all()
+        queries = []
+        for result in results:
+            queries.append(result.get('query'))
+        something = {}   
+        for query in [ele for ind, ele in enumerate(queries,1) if ele not in queries[ind:]]:
+            something[query] = queries.count(query)
+        return something
+
     def search(self ,name):
         return self.db.search(self.User.query == name)
 
