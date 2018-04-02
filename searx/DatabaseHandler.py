@@ -65,10 +65,8 @@ class MongoDatabase(Database):
         self.db.delete_many({})
 
     def find(self, name):
-        return self.db.trending.find({'time':name}, {time: 0, query: 1})
+        return self.db.find_one({'time':name})
 
-    def update_mongo(self, time, query):
-        self.db.trending.findOneAndUpdate(
-        {'time': time},
-        {'query': query}
-        )
+    def update_mongo(self, time, old_query, new_query):
+        return self.db.find_one_and_update({'time':time, 'query':old_query},
+                                                {"$set": {'query': new_query}})

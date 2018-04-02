@@ -16,7 +16,8 @@ along with searx. If not, see < http://www.gnu.org/licenses/ >.
 
 (C) 2013- by Adam Tauber, <asciimoo@gmail.com>
 '''
-
+from __future__ import print_function
+import sys
 if __name__ == '__main__':
     from sys import path
     from os.path import realpath, dirname
@@ -42,6 +43,7 @@ except BaseException:
     from sys import exit
     exit(1)
 from searx import DatabaseHandler
+from searx import ConsistencyChecker
 from cgi import escape
 from datetime import datetime, timedelta
 from werkzeug.contrib.fixers import ProxyFix
@@ -474,6 +476,17 @@ def index_error(output_format, error_message):
         )
 
 
+@app.route('/testing')
+def test():
+    db = DatabaseHandler.MongoDatabase()
+    db.connect()
+    consistency_checker = ConsistencyChecker.consistencyChecker()
+    consistency_checker.run()
+    strs = str(consistency_checker.inconsistencies) + " " + str(consistency_checker.inconsistency_messages) + " " + str(consistency_checker.rows_tiny_checked)
+
+    print("jkhgajkadghadgh", file=sys.stdout)
+    return strs
+
 @app.route('/trending', methods=['GET'])
 def trending():
 
@@ -513,7 +526,7 @@ def index():
     # db = DatabaseHandler.MongoDatabase()
     # db.connect()
     # db.prepare_data({'query': request.form.get('q'),
-    #                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+    #                  'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
     # db.insert()
 
     db = DatabaseHandler.TinyDatabase()

@@ -4,7 +4,12 @@ import json
 from concurrent import futures
 
 class consistencyChecker():
-    inconsistencies = 0
+
+    def __init__(self):
+        self.inconsistencies = 0;
+        self.inconsistency_messages = []
+        self.rows_tiny_checked = []
+        self.row_mongo_checked = []
 
     def run(self):
         #Tinydb connection:
@@ -20,17 +25,31 @@ class consistencyChecker():
         print (mongotable)
 
         #going through rows and checking consistency based on the time of the query:
-        for row in tinytable:
-            time = row['time']
+        for row_in_tinydb in tinytable:
+            time = row_in_tinydb['time']
             mongoQuery = mongodb.find(time)
-            if(mongoQuery != row['query']):
-                print('inconsistency found at ' + row['time'] + '. \n Expected: ' + row['query'] + '\nReceived: ' + mongoQuery)
-                inconsistencies += 1
-                print('\nInconsistencies so far: ' + inconsistencies + '\n')
+
+            # if row does not exist in mongodb then insert it
+            if(not mongoQuery):
+                inconsistency_message = "inconsistency found : missing row in mongodb " + row_in_tinydb['time'] + "-" + row_in_tinydb['query']
+                self.inconsistency_messages.append(inconsistency_message)
+                self.inconsistencies += 1
+                mongodb.prepare_data(row_in_tinydb)
+                mongodb.insert()
+
+            # row exists but inconsistent
+            elif(mongoQuery and mongoQuery['query'] != row_in_tinydb['query']):
+                self.row_mongo_checked.append(mongoQuery)
+                inconsistency_message = "inconsistency found at ' + row_in_tinydb['time'] + '. \n Expected: ' + row_in_tinydb['query'] + '\nReceived: ' + mongoQuery"
+                print(inconsistency_message)
+                self.inconsistency_messages.append(inconsistency_message)
+                self.inconsistencies += 1
+                print('\nInconsistencies so far: ' + self.inconsistencies + '\n')
+
                 #update the worng entry from MongoDB with the old entry from Tinydb
-                db.update_mongo(row['time'],row['query'])
+                mongodb.update_mongo(row_in_tinydb['time'], mongoQuery['query'], row_in_tinydb['query'])
 
-
+            self.rows_tiny_checked.append(row_in_tinydb)
 
 
 if __name__ == '__main__':
