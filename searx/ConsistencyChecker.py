@@ -6,7 +6,7 @@ import json
 
 import json
 
-class consistencyChecker():
+class ConsistencyChecker():
 
     def __init__(self):
         self.inconsistencies = 0;

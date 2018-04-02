@@ -1,6 +1,7 @@
 from tinydb import TinyDB, Query
 from pymongo import MongoClient
 from collections import Counter
+import ConsistencyChecker
 
 class Database(object):
     def __init__(self):
@@ -18,6 +19,13 @@ class Database(object):
 
     def load_all(self):
         return self.db.all()
+
+    def connect_prepare_and_insert_async(self, data):
+        self.connect()
+        self.prepare_data(data)
+        self.insert()
+        checker = ConsistencyChecker.ConsistencyChecker()
+        checker.run()
 
 
 class TinyDatabase(Database):

@@ -28,6 +28,7 @@ import hmac
 import json
 import os
 import sys
+import thread
 
 import requests
 
@@ -481,7 +482,7 @@ def test():
 
     db = DatabaseHandler.MongoDatabase()
     db.connect()
-    consistency_checker = ConsistencyChecker.consistencyChecker()
+    consistency_checker = ConsistencyChecker.ConsistencyChecker()
     consistency_checker.run()
     strs = " inconsistency #" + str(consistency_checker.inconsistencies) + " messages: " + str(consistency_checker.inconsistency_messages) +\
            " tiny db rows checked:" + str(consistency_checker.rows_tiny_checked) + " report http output: " + str(consistency_checker.output)
@@ -535,11 +536,8 @@ def index():
         else:
             return index_error(output_format, 'No query'), 400
 
-    # db = DatabaseHandler.MongoDatabase()
-    # db.connect()
-    # db.prepare_data({'query': request.form.get('q'),
-    #                  'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-    # db.insert()
+    db_mongo = DatabaseHandler.MongoDatabase()
+    thread.start_new_thread(db_mongo.connect_prepare_and_insert_async, ({'query': request.form.get('q'), 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")},))
 
     db = DatabaseHandler.TinyDatabase()
     db.connect()
