@@ -94,6 +94,9 @@ class TinyDatabase(Database):
     def search(self ,name):
         return self.db.search(self.User.query == name)
 
+    def find(self, time):
+        return self.db.search(self.User.time == time)
+
 
 class MongoDatabase(Database):
     def connect(self):
@@ -103,6 +106,9 @@ class MongoDatabase(Database):
 
     def load_all(self):
         return self.db.find({})
+
+    def delete(self, query, time):
+        return self.db.delete_one({'time':time, 'query':query})
 
     def delete_all(self):
         self.db.delete_many({})

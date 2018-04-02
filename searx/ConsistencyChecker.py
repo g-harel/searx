@@ -65,6 +65,26 @@ class ConsistencyChecker():
 
             self.rows_tiny_checked.append(row_in_tinydb)
 
+        # relead all data. row exists in mongo but not in tinydb : delete it in mongo
+        mongotable = mongodb.load_all()
+        for row_in_mongodb in mongotable:
+            time = row_in_mongodb['time']
+            tinydb_query = tinydb.find(time)
+
+            if(not tinydb_query):
+                inconsistency_message = "inconsistency found : extra row in mongodb " + row_in_mongodb['time'] + "-" + row_in_mongodb['query']
+                self.inconsistency_messages.append(inconsistency_message)
+
+                r = requests.post("http://funapp.pythonanywhere.com/report", data=json.dumps({
+                    "type": "Missing row inconsistencies",
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "data": inconsistency_message}),
+                                  headers={'Content-Type': 'application/json'})
+
+                self.inconsistencies += 1
+                mongodb.delete(row_in_mongodb['query'], row_in_mongodb['time'])
+
+
         # generating report
         r = requests.post("http://funapp.pythonanywhere.com/consistency", data=json.dumps({
                             "inconsistencies":self.inconsistencies,
