@@ -42,8 +42,8 @@ except BaseException:
     logger.critical("cannot import dependency: pygments")
     from sys import exit
     exit(1)
-from searx import DatabaseHandler
-from searx import ConsistencyChecker
+import DatabaseHandler
+import ConsistencyChecker
 from cgi import escape
 from datetime import datetime, timedelta
 from werkzeug.contrib.fixers import ProxyFix
@@ -74,7 +74,7 @@ from searx.autocomplete import searx_bang, backends as autocomplete_backends
 from searx.plugins import plugins
 from searx.plugins.oa_doi_rewrite import get_doi_resolver
 from searx.preferences import Preferences, ValidationException
-from searx.answerers import Answerers, file_loader
+from answerers import Answerers, file_loader
 from searx.url_utils import urlencode, urlparse, urljoin
 from searx.utils import new_hmac
 

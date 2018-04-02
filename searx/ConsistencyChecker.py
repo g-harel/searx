@@ -5,7 +5,6 @@ import requests
 import json
 
 import json
-from concurrent import futures
 
 class consistencyChecker():
 
@@ -61,10 +60,3 @@ class consistencyChecker():
                             "total_number":len(self.rows_tiny_checked),
                             "date":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}), headers={'Content-Type':'application/json'})
         self.output = r.content
-
-if __name__ == '__main__':
-    classes = []
-    with futures.ThreadPoolExecutor(max_workers = 1) as executor:
-        #need to pass something in submit(), not sure what
-        futures_classes = {executor.submit()}
-    consistencyChecker().run()
