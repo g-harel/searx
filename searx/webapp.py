@@ -478,11 +478,13 @@ def index_error(output_format, error_message):
 
 @app.route('/testing')
 def test():
+
     db = DatabaseHandler.MongoDatabase()
     db.connect()
     consistency_checker = ConsistencyChecker.consistencyChecker()
     consistency_checker.run()
-    strs = str(consistency_checker.inconsistencies) + " " + str(consistency_checker.inconsistency_messages) + " " + str(consistency_checker.rows_tiny_checked)
+    strs = " inconsistency #" + str(consistency_checker.inconsistencies) + " messages: " + str(consistency_checker.inconsistency_messages) +\
+           " tiny db rows checked:" + str(consistency_checker.rows_tiny_checked) + " report http output: " + str(consistency_checker.output)
 
     print("jkhgajkadghadgh", file=sys.stdout)
     return strs

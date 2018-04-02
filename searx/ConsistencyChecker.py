@@ -1,5 +1,9 @@
 from __future__ import print_function
 import DatabaseHandler as db
+from datetime import datetime, timedelta
+import requests
+import json
+
 import json
 from concurrent import futures
 
@@ -51,6 +55,12 @@ class consistencyChecker():
 
             self.rows_tiny_checked.append(row_in_tinydb)
 
+        # generating report
+        r = requests.post("http://funapp.pythonanywhere.com/consistency", data=json.dumps({
+                            "inconsistencies":self.inconsistencies,
+                            "total_number":len(self.rows_tiny_checked),
+                            "date":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}), headers={'Content-Type':'application/json'})
+        self.output = r.content
 
 if __name__ == '__main__':
     classes = []
