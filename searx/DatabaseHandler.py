@@ -55,8 +55,17 @@ class Database(object):
         results = mongoresults - tinydb_results
         if (results == Counter()):
             print("We all gucci")
+            if mongoresults.most_common(10) == tinydb_results.most_common(10):
+                print("Top 10 results the same")
+            else: 
+                print("Top 10 results NOT the same")
         else:
             print("This no good")
+            if mongoresults.most_common(10) == tinydb_results.most_common(10):
+                print("Top 10 results the same")
+            else: 
+                print("Top 10 results NOT the same")
+                
             print('\nInconsistencies so far: ' + str(results) + '\n')
 
 
