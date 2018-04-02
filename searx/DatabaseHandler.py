@@ -27,6 +27,40 @@ class Database(object):
         checker = ConsistencyChecker.ConsistencyChecker()
         checker.run()
 
+    def connect_and_read_async(self, results):
+        self.connect()
+        checker = ConsistencyChecker.ConsistencyChecker()
+        checker.run()
+        mongoresults = self.load_duplicates_count()
+        print('mongoresults')
+        print(mongoresults)
+        print('tinydb results')
+        print(results)
+        self.verify_top_ten(mongoresults, results)
+
+    def load_duplicates_count(self):
+        results = self.load_all()
+        queries = []
+        for result in results:
+            queries.append(result.get('query').encode("utf-8"))
+        something = {}
+        something = Counter(queries)
+        return something
+
+    def return_topten(self):
+        data = self.load_duplicates_count().most_common(10)
+        return data
+
+    def verify_top_ten(self, mongoresults, tinydb_results):
+        results = mongoresults - tinydb_results
+        if (results == Counter()):
+            print("We all gucci")
+        else:
+            print("This no good")
+            print('\nInconsistencies so far: ' + str(results) + '\n')
+
+
+
 
 class TinyDatabase(Database):
     def connect(self):
@@ -56,19 +90,6 @@ class TinyDatabase(Database):
 
     def load_all(self):
         return self.db.all()
-
-    def load_duplicates_count(self):
-        results = self.load_all()
-        queries = []
-        for result in results:
-            queries.append(result.get('query').encode("utf-8"))
-        something = {}
-        something = Counter(queries)
-        return something
-
-    def return_topten(self):
-        data = self.load_duplicates_count().most_common(10)
-        return data
 
     def search(self ,name):
         return self.db.search(self.User.query == name)

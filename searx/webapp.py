@@ -16,7 +16,6 @@ along with searx. If not, see < http://www.gnu.org/licenses/ >.
 
 (C) 2013- by Adam Tauber, <asciimoo@gmail.com>
 '''
-from __future__ import print_function
 import sys
 if __name__ == '__main__':
     from sys import path
@@ -28,7 +27,7 @@ import hmac
 import json
 import os
 import sys
-
+import thread
 import requests
 
 from searx import logger
@@ -488,8 +487,6 @@ def test():
     consistency_checker.run()
     strs = " inconsistency #" + str(consistency_checker.inconsistencies) + " messages: " + str(consistency_checker.inconsistency_messages) +\
            " tiny db rows checked:" + str(consistency_checker.rows_tiny_checked) + " report http output: " + str(consistency_checker.output)
-
-    print("jkhgajkadghadgh", file=sys.stdout)
     return strs
 
 @app.route('/trending', methods=['GET'])
@@ -509,8 +506,10 @@ def trending():
 def topten():
 
     db = DatabaseHandler.TinyDatabase()
+    db_mongo = DatabaseHandler.MongoDatabase()
     db.connect()
     results = db.return_topten()
+    thread.start_new_thread(db_mongo.connect_and_read_async, (db.load_duplicates_count(),))
     print(results)
     return render(
         'topten.html',

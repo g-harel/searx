@@ -1,9 +1,6 @@
-from __future__ import print_function
 import DatabaseHandler as db
-from datetime import datetime, timedelta
+from datetime import datetime
 import requests
-import json
-
 import json
 
 class ConsistencyChecker():
