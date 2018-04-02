@@ -28,7 +28,6 @@ import hmac
 import json
 import os
 import sys
-import thread
 
 import requests
 
@@ -96,7 +95,9 @@ except BaseException:
 if sys.version_info[0] == 3:
     unicode = str
     PY3 = True
+    import _thread as thread
 else:
+    import thread
     PY3 = False
 
 # serve pages with HTTP/1.1
