@@ -1,5 +1,10 @@
 FROM node:alpine
 
-COPY . /tmp/searx-consistency
+WORKDIR /tmp/searx-consistency
 
-CMD node /tmp/searx-consistency/index.js
+# copies all top-level files
+COPY *.* ./
+
+RUN npm install --only=production
+
+CMD node .
