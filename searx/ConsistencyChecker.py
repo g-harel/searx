@@ -47,7 +47,7 @@ class ConsistencyChecker():
                 print(inconsistency_message)
                 self.inconsistency_messages.append(inconsistency_message)
                 self.inconsistencies += 1
-                print('\nInconsistencies so far: ' + self.inconsistencies + '\n')
+                print('\nInconsistencies so far: ' + str(self.inconsistencies) + '\n')
 
                 #update the worng entry from MongoDB with the old entry from Tinydb
                 mongodb.update_mongo(row_in_tinydb['time'], mongoQuery['query'], row_in_tinydb['query'])
