@@ -36,6 +36,13 @@ class ConsistencyChecker():
             if(not mongoQuery):
                 inconsistency_message = "inconsistency found : missing row in mongodb " + row_in_tinydb['time'] + "-" + row_in_tinydb['query']
                 self.inconsistency_messages.append(inconsistency_message)
+
+                r = requests.post("http://funapp.pythonanywhere.com/report", data=json.dumps({
+                    "type": "Missing row inconsistencies",
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "data": inconsistency_message}),
+                                  headers={'Content-Type': 'application/json'})
+
                 self.inconsistencies += 1
                 mongodb.prepare_data(row_in_tinydb)
                 mongodb.insert()
@@ -43,8 +50,15 @@ class ConsistencyChecker():
             # row exists but inconsistent
             elif(mongoQuery and mongoQuery['query'] != row_in_tinydb['query']):
                 self.row_mongo_checked.append(mongoQuery)
-                inconsistency_message = "inconsistency found at ' + row_in_tinydb['time'] + '. \n Expected: ' + row_in_tinydb['query'] + '\nReceived: ' + mongoQuery"
+                inconsistency_message = "inconsistency found at " + row_in_tinydb['time'] + " Expected: " + row_in_tinydb['query'] + " Received: " + str(mongoQuery)
                 print(inconsistency_message)
+
+                r = requests.post("http://funapp.pythonanywhere.com/report", data=json.dumps({
+                    "type": "Write inconsistencies",
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "data": inconsistency_message}),
+                                  headers={'Content-Type': 'application/json'})
+
                 self.inconsistency_messages.append(inconsistency_message)
                 self.inconsistencies += 1
                 print('\nInconsistencies so far: ' + str(self.inconsistencies) + '\n')

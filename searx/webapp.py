@@ -483,6 +483,7 @@ def test():
 
     db = DatabaseHandler.MongoDatabase()
     db.connect()
+    db.update_mongo("2018-04-01 23:30:54", "asd", "lolllllllll")
     consistency_checker = ConsistencyChecker.ConsistencyChecker()
     consistency_checker.run()
     strs = " inconsistency #" + str(consistency_checker.inconsistencies) + " messages: " + str(consistency_checker.inconsistency_messages) +\
