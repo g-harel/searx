@@ -1,7 +1,6 @@
 from tinydb import TinyDB, Query
 from pymongo import MongoClient
 
-
 class Database(object):
     def __init__(self):
         self.data = None
@@ -22,7 +21,7 @@ class Database(object):
 
 class TinyDatabase(Database):
     def connect(self):
-        self.db = TinyDB('./db.json')
+        self.db = TinyDB('../db.json')
         self.User = Query()
 
     def forklift(self):
@@ -46,6 +45,13 @@ class TinyDatabase(Database):
 
         return {'query': query, 'time': time}
 
+    def load_all(self):
+        return self.db.all()
+
+    def search(self ,name):
+        return self.db.search(self.User.query == name)
+
+
 class MongoDatabase(Database):
     def connect(self):
         self.User = MongoClient(
@@ -58,3 +64,11 @@ class MongoDatabase(Database):
     def delete_all(self):
         self.db.delete_many({})
 
+    def find(self, name):
+        return self.db.trending.find({'time':name}, {time: 0, query: 1})
+
+    def update_mongo(self, time, query):
+        self.db.trending.findOneAndUpdate(
+        {'time': time},
+        {'query': query}
+        )
