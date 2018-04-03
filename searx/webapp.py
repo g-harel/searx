@@ -476,6 +476,10 @@ def index_error(output_format, error_message):
             'index.html',
         )
 
+@app.route('/forklift')
+def forking():
+    db = DatabaseHandler.TinyDatabase()
+    db.forklift()
 
 @app.route('/testing')
 def test():
