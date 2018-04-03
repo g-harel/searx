@@ -1,4 +1,4 @@
-from searx import DatabaseHandler as db
+import DatabaseHandler as db
 from datetime import datetime
 import requests
 import json

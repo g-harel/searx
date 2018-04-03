@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from collections import Counter
 from datetime import datetime
 import json
-from searx import ConsistencyChecker
+import ConsistencyChecker
 
 
 class Database(object):
