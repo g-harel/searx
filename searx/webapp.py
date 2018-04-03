@@ -489,16 +489,16 @@ def test():
     db.connect()
 
     consistency_checker = ConsistencyChecker.ConsistencyChecker()
-    consistency_checker.run()
-    strs = " inconsistency #" + str(consistency_checker.inconsistencies) + " messages: " + str(consistency_checker.inconsistency_messages) +\
-           " tiny db rows checked:" + str(consistency_checker.rows_tiny_checked) + " report http output: " + str(consistency_checker.output)
-    return strs
+    # consistency_checker.run()
+    # strs = " inconsistency #" + str(consistency_checker.inconsistencies) + " messages: " + str(consistency_checker.inconsistency_messages) +\
+    #        " tiny db rows checked:" + str(consistency_checker.rows_tiny_checked) + " report http output: " + str(consistency_checker.output)
+    return ""
 
 
 @app.route('/trending', methods=['GET'])
 def trending():
-    # db = DatabaseHandler.MongoDatabase()
-    db = DatabaseHandler.TinyDatabase()
+    # db = DatabaseHandler.TinyDatabase()
+    db = DatabaseHandler.MongoDatabase()
     db.connect()
     results = db.load_all()
 
@@ -510,12 +510,11 @@ def trending():
 
 @app.route('/topten', methods=['GET'])
 def topten():
-    db = DatabaseHandler.TinyDatabase()
-    db.connect()
+    # db = DatabaseHandler.TinyDatabase()
+    # db.connect()
     db_mongo = DatabaseHandler.MongoDatabase()
     db_mongo.connect()
     results = db_mongo.return_topten()
-    thread.start_new_thread(db_mongo.connect_and_read_async, (db.load_duplicates_count(),))
     print(results)
     return render(
         'topten.html',
@@ -545,13 +544,11 @@ def index():
             return index_error(output_format, 'No query'), 400
 
     db_mongo = DatabaseHandler.MongoDatabase()
-    thread.start_new_thread(db_mongo.connect_prepare_and_insert_async, ({'query': request.form.get('q'), 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")},))
 
-    db = DatabaseHandler.TinyDatabase()
-    db.connect()
-    db.prepare_data({'query': request.form.get('q'),
+    db_mongo.connect()
+    db_mongo.prepare_data({'query': request.form.get('q'),
                      'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
-    db.insert()
+    db_mongo.insert()
 
     # search
     search_query = None
