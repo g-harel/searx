@@ -27,7 +27,7 @@ import hmac
 import json
 import os
 import sys
-import thread
+
 import requests
 
 from searx import logger
@@ -479,10 +479,9 @@ def index_error(output_format, error_message):
 
 @app.route('/testing')
 def test():
-
     db = DatabaseHandler.MongoDatabase()
     db.connect()
-    db.update_mongo("2018-04-01 23:30:54", "asd", "lolllllllll")
+
     consistency_checker = ConsistencyChecker.ConsistencyChecker()
     consistency_checker.run()
     strs = " inconsistency #" + str(consistency_checker.inconsistencies) + " messages: " + str(consistency_checker.inconsistency_messages) +\

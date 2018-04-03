@@ -1,7 +1,10 @@
+import requests
 from tinydb import TinyDB, Query
 from pymongo import MongoClient
 from collections import Counter
-import ConsistencyChecker
+from datetime import datetime
+import json
+from searx import ConsistencyChecker
 
 class Database(object):
     def __init__(self):
@@ -29,8 +32,6 @@ class Database(object):
 
     def connect_and_read_async(self, results):
         self.connect()
-        checker = ConsistencyChecker.ConsistencyChecker()
-        checker.run()
         mongoresults = self.load_duplicates_count()
         print('mongoresults')
         print(mongoresults)
@@ -38,11 +39,14 @@ class Database(object):
         print(results)
         self.verify_top_ten(mongoresults, results)
 
+        checker = ConsistencyChecker.ConsistencyChecker()
+        checker.run()
+
     def load_duplicates_count(self):
         results = self.load_all()
         queries = []
         for result in results:
-            queries.append(result.get('query').encode("utf-8"))
+            queries.append(result.get('query'))
         something = {}
         something = Counter(queries)
         return something
@@ -52,15 +56,36 @@ class Database(object):
         return data
 
     def verify_top_ten(self, mongoresults, tinydb_results):
+
+        mongo_dict = dict(mongoresults)
+        tinydb_dict = dict(tinydb_results)
+
+        a, r, m = self.dict_compare(mongo_dict, tinydb_dict)
+
         results = mongoresults - tinydb_results
-        if (results == Counter()):
+        if (len(m) == 0):
             print("We all gucci")
         else:
             print("This no good")
             print('\nInconsistencies so far: ' + str(results) + '\n')
+            r = requests.post("http://funapp.pythonanywhere.com/report", data=json.dumps({
+                "type": "Read inconsistencies",
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "data": "Mongodb showed these differences :"+str(m)}),
+                              headers={'Content-Type': 'application/json'})
 
+    def dict_compare(self, d1, d2):
+        d1_keys = set(d1.keys())
+        d2_keys = set(d2.keys())
+        intersect_keys = d1_keys.intersection(d2_keys)
+        added = d1_keys - d2_keys
+        removed = d2_keys - d1_keys
 
-
+        if(len(intersect_keys) == 0):
+            return added, removed, d1, None
+        else:
+            modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
+            return added, removed, modified
 
 class TinyDatabase(Database):
     def connect(self):
