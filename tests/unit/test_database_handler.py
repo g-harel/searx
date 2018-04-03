@@ -3,6 +3,7 @@
 from searx.DatabaseHandler import TinyDatabase, MongoDatabase, Database
 from searx.testing import SearxTestCase
 
+
 class DatabaseHandlerTestCase(SearxTestCase):
     def test_forklift_prepare_data(self):
         test_results = [

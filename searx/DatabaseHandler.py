@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 from searx import ConsistencyChecker
 
+
 class Database(object):
     def __init__(self):
         self.data = None
@@ -67,7 +68,7 @@ class Database(object):
             print("We all gucci")
             if mongoresults.most_common(10) == tinydb_results.most_common(10):
                 print("Top 10 results the same")
-            else: 
+            else:
                 print("Top 10 results NOT the same")
         else:
             print("This no good")
@@ -75,8 +76,8 @@ class Database(object):
             r = requests.post("http://funapp.pythonanywhere.com/report", data=json.dumps({
                 "type": "Read inconsistencies",
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "data": "Mongodb showed these differences :"+str(m)}),
-                              headers={'Content-Type': 'application/json'})
+                "data": "Mongodb showed these differences :" + str(m)}),
+                headers={'Content-Type': 'application/json'})
 
     def dict_compare(self, d1, d2):
         d1_keys = set(d1.keys())
@@ -91,13 +92,14 @@ class Database(object):
             modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
             return modified
 
+
 class TinyDatabase(Database):
     def connect(self):
         self.db = TinyDB('../db.json')
         self.User = Query()
 
     def forklift(self):
-        tinydb  = TinyDatabase()
+        tinydb = TinyDatabase()
         mongodb = MongoDatabase()
 
         tinydb.connect()
@@ -120,7 +122,7 @@ class TinyDatabase(Database):
     def load_all(self):
         return self.db.all()
 
-    def search(self ,name):
+    def search(self, name):
         return self.db.search(self.User.query == name)
 
     def find(self, time):
@@ -137,14 +139,13 @@ class MongoDatabase(Database):
         return self.db.find({})
 
     def delete(self, query, time):
-        return self.db.delete_one({'time':time, 'query':query})
+        return self.db.delete_one({'time': time, 'query': query})
 
     def delete_all(self):
         self.db.delete_many({})
 
     def find(self, name):
-        return self.db.find_one({'time':name})
+        return self.db.find_one({'time': name})
 
     def update_mongo(self, time, old_query, new_query):
-        return self.db.find_one_and_update({'time':time, 'query':old_query},
-                                                {"$set": {'query': new_query}})
+        return self.db.find_one_and_update({'time': time, 'query': old_query}, {"$set": {'query': new_query}})

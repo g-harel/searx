@@ -3,28 +3,29 @@ from datetime import datetime
 import requests
 import json
 
+
 class ConsistencyChecker():
 
     def __init__(self):
-        self.inconsistencies = 0;
+        self.inconsistencies = 0
         self.inconsistency_messages = []
         self.rows_tiny_checked = []
         self.row_mongo_checked = []
 
     def run(self):
-        #Tinydb connection:
+        # Tinydb connection:
         tinydb = db.TinyDatabase()
         tinydb.connect()
         tinytable = tinydb.load_all()
-        print (tinytable)
+        print(tinytable)
 
-        #MongoDB connection:
+        # MongoDB connection:
         mongodb = db.MongoDatabase()
         mongodb.connect()
         mongotable = mongodb.load_all()
-        print (mongotable)
+        print(mongotable)
 
-        #going through rows and checking consistency based on the time of the query:
+        # going through rows and checking consistency based on the time of the query:
         for row_in_tinydb in tinytable:
             time = row_in_tinydb['time']
             mongoQuery = mongodb.find(time)
@@ -38,7 +39,7 @@ class ConsistencyChecker():
                     "type": "Missing row inconsistencies",
                     "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "data": inconsistency_message}),
-                                  headers={'Content-Type': 'application/json'})
+                    headers={'Content-Type': 'application/json'})
 
                 self.inconsistencies += 1
                 mongodb.prepare_data(row_in_tinydb)
@@ -54,13 +55,13 @@ class ConsistencyChecker():
                     "type": "Write inconsistencies",
                     "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "data": inconsistency_message}),
-                                  headers={'Content-Type': 'application/json'})
+                    headers={'Content-Type': 'application/json'})
 
                 self.inconsistency_messages.append(inconsistency_message)
                 self.inconsistencies += 1
                 print('\nInconsistencies so far: ' + str(self.inconsistencies) + '\n')
 
-                #update the worng entry from MongoDB with the old entry from Tinydb
+                # update the worng entry from MongoDB with the old entry from Tinydb
                 mongodb.update_mongo(row_in_tinydb['time'], mongoQuery['query'], row_in_tinydb['query'])
 
             self.rows_tiny_checked.append(row_in_tinydb)
@@ -79,15 +80,15 @@ class ConsistencyChecker():
                     "type": "Missing row inconsistencies",
                     "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "data": inconsistency_message}),
-                                  headers={'Content-Type': 'application/json'})
+                    headers={'Content-Type': 'application/json'})
 
                 self.inconsistencies += 1
                 mongodb.delete(row_in_mongodb['query'], row_in_mongodb['time'])
 
-
         # generating report
         r = requests.post("http://funapp.pythonanywhere.com/consistency", data=json.dumps({
-                            "inconsistencies":self.inconsistencies,
-                            "total_number":len(self.rows_tiny_checked),
-                            "date":datetime.now().strftime("%Y-%m-%d %H:%M:%S")}), headers={'Content-Type':'application/json'})
+            "inconsistencies": self.inconsistencies,
+            "total_number": len(self.rows_tiny_checked),
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),
+            headers={'Content-Type': 'application/json'})
         self.output = r.content
