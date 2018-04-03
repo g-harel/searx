@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from collections import Counter
 from datetime import datetime
 import json
-from searx import ConsistencyChecker
+import ConsistencyChecker
 
 
 class Database(object):
@@ -57,7 +57,6 @@ class Database(object):
         return data
 
     def verify_top_ten(self, mongoresults, tinydb_results):
-
         mongo_dict = dict(mongoresults)
         tinydb_dict = dict(tinydb_results)
 

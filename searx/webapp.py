@@ -497,7 +497,6 @@ def test():
 
 @app.route('/trending', methods=['GET'])
 def trending():
-
     # db = DatabaseHandler.MongoDatabase()
     db = DatabaseHandler.TinyDatabase()
     db.connect()
@@ -511,11 +510,11 @@ def trending():
 
 @app.route('/topten', methods=['GET'])
 def topten():
-
     db = DatabaseHandler.TinyDatabase()
-    db_mongo = DatabaseHandler.MongoDatabase()
     db.connect()
-    results = db.return_topten()
+    db_mongo = DatabaseHandler.MongoDatabase()
+    db_mongo.connect()
+    results = db_mongo.return_topten()
     thread.start_new_thread(db_mongo.connect_and_read_async, (db.load_duplicates_count(),))
     print(results)
     return render(
