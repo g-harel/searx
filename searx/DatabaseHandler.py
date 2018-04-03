@@ -60,10 +60,10 @@ class Database(object):
         mongo_dict = dict(mongoresults)
         tinydb_dict = dict(tinydb_results)
 
-        a, r, m = self.dict_compare(mongo_dict, tinydb_dict)
+        m = self.dict_compare(mongo_dict, tinydb_dict)
 
         results = mongoresults - tinydb_results
-        if (len(m) == 0):
+        if len(m) == 0:
             print("We all gucci")
             if mongoresults.most_common(10) == tinydb_results.most_common(10):
                 print("Top 10 results the same")
@@ -71,11 +71,6 @@ class Database(object):
                 print("Top 10 results NOT the same")
         else:
             print("This no good")
-            if mongoresults.most_common(10) == tinydb_results.most_common(10):
-                print("Top 10 results the same")
-            else: 
-                print("Top 10 results NOT the same")
-                
             print('\nInconsistencies so far: ' + str(results) + '\n')
             r = requests.post("http://funapp.pythonanywhere.com/report", data=json.dumps({
                 "type": "Read inconsistencies",
@@ -90,11 +85,11 @@ class Database(object):
         added = d1_keys - d2_keys
         removed = d2_keys - d1_keys
 
-        if(len(intersect_keys) == 0):
-            return added, removed, d1, None
+        if len(intersect_keys) == 0:
+            return d1
         else:
             modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
-            return added, removed, modified
+            return modified
 
 class TinyDatabase(Database):
     def connect(self):
