@@ -546,8 +546,7 @@ def index():
     db_mongo = DatabaseHandler.MongoDatabase()
 
     db_mongo.connect()
-    db_mongo.prepare_data({'query': request.form.get('q'),
-                     'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+    db_mongo.prepare_data({'query': request.form.get('q'), 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
     db_mongo.insert()
 
     # search
