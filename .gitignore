@@ -7,7 +7,6 @@ coverage/
 .installed.cfg
 engines.cfg
 env
-manage.sh
 robot_log.html
 robot_output.xml
 robot_report.html

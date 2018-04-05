@@ -8,5 +8,5 @@ pyopenssl==17.4.0
 python-dateutil==2.6.1
 pyyaml==3.12
 requests[socks]==2.18.4
-tinydb
-pymongo
+tinydb==3.8.1
+pymongo==3.6.1
