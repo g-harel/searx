@@ -43,7 +43,7 @@ parser.add_argument('--category', type=str, nargs='?',
                     choices=searx.engines.categories.keys(),
                     default='general',
                     help='Search category')
-parser.add_argument('--lang', type=str, nargs='?',default='all',
+parser.add_argument('--lang', type=str, nargs='?', default='all',
                     help='Search language')
 parser.add_argument('--pageno', type=int, nargs='?', default=1,
                     help='Page number starting from 1')
@@ -55,11 +55,11 @@ args = parser.parse_args()
 
 # search results for the query
 form = {
-    "q":args.query,
-    "categories":args.category.decode('utf-8'),
-    "pageno":str(args.pageno),
-    "language":args.lang,
-    "time_range":args.timerange
+    "q": args.query,
+    "categories": args.category.decode('utf-8'),
+    "pageno": str(args.pageno),
+    "language": args.lang,
+    "time_range": args.timerange
 }
 preferences = searx.preferences.Preferences(['oscar'], searx.engines.categories.keys(), searx.engines.engines, [])
 preferences.key_value_settings['safesearch'].parse(args.safesearch)
@@ -71,17 +71,19 @@ result_container = search.search()
 # output
 from datetime import datetime
 
+
 def no_parsed_url(results):
     for result in results:
         del result['parsed_url']
     return results
+
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
     if isinstance(obj, datetime):
         serial = obj.isoformat()
         return serial
-    raise TypeError ("Type not serializable")
+    raise TypeError("Type not serializable")
 
 result_container_json = {
     "search": {
@@ -90,7 +92,7 @@ result_container_json = {
         "lang": search_query.lang,
         "safesearch": search_query.safesearch,
         "timerange": search_query.time_range,
-        "engines": search_query.engines  
+        "engines": search_query.engines
     },
     "results": no_parsed_url(result_container.get_ordered_results()),
     "infoboxes": result_container.infoboxes,
@@ -101,4 +103,3 @@ result_container_json = {
 }
 sys.stdout = codecs.getwriter("UTF-8")(sys.stdout)
 sys.stdout.write(dumps(result_container_json, sort_keys=True, indent=4, ensure_ascii=False, encoding="utf-8", default=json_serial))
-

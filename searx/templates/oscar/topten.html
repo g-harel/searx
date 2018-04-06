@@ -1,0 +1,19 @@
+{% extends "oscar/base.html" %}
+{% block content %}
+<table class="table">
+  <thead>
+    <tr>
+        <th scope="col">Query</th>
+        <th scope="col">Count</th>
+    </tr>
+  </thead>
+   <tbody>
+   {% for x in results %}
+    <tr>
+        <td>{{x[0]}}</td>
+        <td>{{x[1]}}</td>
+    </tr>
+    {% endfor %}
+   </tbody>
+</table>
+{% endblock %}
