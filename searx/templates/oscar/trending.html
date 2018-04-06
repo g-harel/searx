@@ -1,0 +1,19 @@
+{% extends "oscar/base.html" %}
+{% block content %}
+<table class="table">
+  <thead>
+    <tr>
+        <th scope="col">Query</th>
+        <th scope="col">Time</th>
+    </tr>
+  </thead>
+   <tbody>
+   {% for output in results %}
+    <tr>
+        <td>{{output.query}}</td>
+        <td>{{output.time}}</td>
+    </tr>
+    {% endfor %}
+   </tbody>
+</table>
+{% endblock %}

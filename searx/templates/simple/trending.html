@@ -1,0 +1,9 @@
+{% extends "simple/base.html" %}
+{% block content %}
+{% for output in results %}
+<div>
+    <p>
+        {{output.query}} - {{output.time}}
+    </p>
+</div>
+{% endblock %}
