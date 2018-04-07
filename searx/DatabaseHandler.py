@@ -97,10 +97,7 @@ class TinyDatabase(Database):
         self.db = TinyDB('../db.json')
         self.User = Query()
 
-    def forklift(self):
-        tinydb = TinyDatabase()
-        mongodb = MongoDatabase()
-
+    def forklift(self, tinydb, mongodb):
         tinydb.connect()
         mongodb.connect()
 

@@ -480,7 +480,10 @@ def index_error(output_format, error_message):
 @app.route('/forklift')
 def forking():
     db = DatabaseHandler.TinyDatabase()
-    db.forklift()
+
+    tinydb = TinyDatabase()
+    mongodb = MongoDatabase()
+    db.forklift(tinydb, mongodb)
 
 
 @app.route('/testing')
