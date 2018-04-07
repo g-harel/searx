@@ -33,6 +33,21 @@ class DatabaseHandlerTestCase(SearxTestCase):
         self.assertTrue(mongo.insert.assert_called)
         self.assertTrue(mocked_checker.run.assert_called)
 
+    @mock.patch('searx.ConsistencyChecker.ConsistencyChecker')
+    def test_shadow_read(self, mocked_checker):
+        mongo = MongoDatabase()
+
+        mongo.connect = MagicMock()
+        mongo.load_duplicates_count = MagicMock(return_value=[])
+        mongo.verify_top_ten = MagicMock()
+
+        mongo.connect_and_read_async([], mocked_checker)
+
+        self.assertTrue(mongo.connect.assert_called)
+        self.assertTrue(mongo.load_duplicates_count.assert_called)
+        mongo.verify_top_ten.assert_called_with([], [])
+        self.assertTrue(mocked_checker.run.assert_called)
+
     @mock.patch('searx.DatabaseHandler.TinyDatabase')
     @mock.patch('searx.DatabaseHandler.MongoDatabase')
     def test_forklift_execution(self, mocked_mongo, mocked_tinydb):
