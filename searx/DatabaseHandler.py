@@ -28,14 +28,13 @@ class Database(object):
     def load_all(self):
         return self.db.all()
 
-    def connect_prepare_and_insert_async(self, data):
+    def connect_prepare_and_insert_async(self, data, checker):
         self.connect()
         self.prepare_data(data)
         self.insert()
-        checker = ConsistencyChecker.ConsistencyChecker()
         checker.run()
 
-    def connect_and_read_async(self, results):
+    def connect_and_read_async(self, results, checker):
         self.connect()
         mongoresults = self.load_duplicates_count()
         print('mongoresults')
@@ -43,8 +42,6 @@ class Database(object):
         print('tinydb results')
         print(results)
         self.verify_top_ten(mongoresults, results)
-
-        checker = ConsistencyChecker.ConsistencyChecker()
         checker.run()
 
     def load_duplicates_count(self):
