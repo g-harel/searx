@@ -21,6 +21,21 @@ class DatabaseHandlerTestCase(SearxTestCase):
             {'query': 'is gullible in the dictionary', 'time': '2018-03-25 11:20:38'}
         ]
 
+    @mock.patch('searx.ConsistencyChecker.ConsistencyChecker')
+    def test_shadow_write(self, mocked_checker):
+        mongo = MongoDatabase()
+
+        mongo.connect = MagicMock()
+        mongo.prepare_data = MagicMock()
+        mongo.insert = MagicMock()
+
+        mongo.connect_prepare_and_insert_async({}, mocked_checker)
+
+        self.assertTrue(mongo.connect.assert_called)
+        mongo.prepare_data.assert_called_with({})
+        self.assertTrue(mongo.insert.assert_called)
+        self.assertTrue(mocked_checker.run.assert_called)
+
     @mock.patch('searx.DatabaseHandler.TinyDatabase')
     @mock.patch('searx.DatabaseHandler.MongoDatabase')
     def test_forklift_execution(self, mocked_mongo, mocked_tinydb):
