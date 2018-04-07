@@ -4,7 +4,11 @@ from pymongo import MongoClient
 from collections import Counter
 from datetime import datetime
 import json
-import ConsistencyChecker
+import sys
+if sys.version_info[0] == 3:
+    from searx import ConsistencyChecker
+else:
+    import ConsistencyChecker
 
 
 class Database(object):

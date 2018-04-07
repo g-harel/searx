@@ -1,4 +1,8 @@
-from DatabaseHandler import TinyDatabase, MongoDatabase, Database
+import sys
+if sys.version_info[0] == 3:
+    from searx.DatabaseHandler import TinyDatabase, MongoDatabase, Database
+else:
+    from DatabaseHandler import TinyDatabase, MongoDatabase, Database
 from searx import ConsistencyChecker
 from searx.testing import SearxTestCase
 from mock import MagicMock
