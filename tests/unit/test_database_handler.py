@@ -1,4 +1,4 @@
-from searx.DatabaseHandler import TinyDatabase, MongoDatabase, Database
+from DatabaseHandler import TinyDatabase, MongoDatabase, Database
 from searx import ConsistencyChecker
 from searx.testing import SearxTestCase
 from mock import MagicMock
@@ -16,6 +16,22 @@ class DatabaseHandlerTestCase(SearxTestCase):
             {'query': 'how much calory does water have', 'time': '2018-03-25 10:20:38'},
             {'query': 'is gullible in the dictionary', 'time': '2018-03-25 11:20:38'}
         ]
+
+    @mock.patch(TinyDatabase)
+    @mock.patch(MongoDatabase)
+    def test_forklift_execution(self, mocked_mongo, mocked_tinydb):
+        mocked_tinydb.load_all.return_value = [{'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'}]
+
+        db = TinyDatabase()
+        db.forklift(mocked_tinydb, mocked_mongo)
+
+        self.assertTrue(mocked_tinydb.connect.assert_called)
+        self.assertTrue(mocked_tinydb.load_all.assert_called)
+
+        self.assertTrue(mocked_mongo.connect.assert_called)
+        self.assertTrue(mocked_mongo.delete_all.assert_called)
+        mocked_mongo.prepare_data.assert_called_with({'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'})
+        self.assertTrue(mocked_mongo.insert.assert_called)
 
     def test_consistency_tester(self):
         mocked_mongo_insert = MongoDatabase
