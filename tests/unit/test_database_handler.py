@@ -21,8 +21,8 @@ class DatabaseHandlerTestCase(SearxTestCase):
             {'query': 'is gullible in the dictionary', 'time': '2018-03-25 11:20:38'}
         ]
 
-    @mock.patch(TinyDatabase)
-    @mock.patch(MongoDatabase)
+    @mock.patch('searx.DatabaseHandler.TinyDatabase')
+    @mock.patch('searx.DatabaseHandler.MongoDatabase')
     def test_forklift_execution(self, mocked_mongo, mocked_tinydb):
         mocked_tinydb.load_all.return_value = [{'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'}]
 
