@@ -8,6 +8,14 @@ from mock import Mock, mock, patch
 import requests
 
 
+def side_affect(self,arg):
+    if arg == '2018-03-25 21:20:38':
+        return {'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'}
+    elif arg == '2019-03-25 21:20:38':
+        {}
+    else:
+        return {}
+
 class DatabaseHandlerTestCase(SearxTestCase):
     def test_forklift_prepare_data(self):
         test_results = [
@@ -64,84 +72,146 @@ class DatabaseHandlerTestCase(SearxTestCase):
         mocked_mongo.prepare_data.assert_called_with({'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'})
         self.assertTrue(mocked_mongo.insert.assert_called)
 
-    def test_consistency_tester(self):
+    def test_consistency_tester_consistent_data(self):
         mocked_mongo_insert = MongoDatabase
         mocked_mongo_load_all = MongoDatabase
         mocked_mongo_find = MongoDatabase
         mocked_mongo_update_mongo = MongoDatabase
+        mocked_mongo_delete = MongoDatabase
 
         mocked_http_requests = requests
 
         mocked_tiny_load_all = TinyDatabase
+        mocked_tiny_find     = TinyDatabase
 
-        mocked_mongo_insert.insert = MagicMock(return_value='done')
         mocked_mongo_load_all.load_all = MagicMock(return_value=[{'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'}])
         mocked_mongo_find.find = MagicMock(return_value={'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'})
         mocked_mongo_update_mongo.update = MagicMock(return_value={'2018-03-25 21:20:38', 'hello', 'bye'})
+        mocked_mongo_delete.delete = MagicMock(reture_value='done')
+        mocked_mongo_insert.insert = MagicMock(return_value='done')
 
         mocked_http_requests.post = MagicMock(content={'content': "COOL"})
+
         mocked_tiny_load_all.load_all = MagicMock(return_value=[{'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'}])
 
         checker = ConsistencyChecker.ConsistencyChecker()
         checker.run()
 
-        assert(checker.inconsistencies, 0)
-        assert(checker.inconsistency_messages, None)
-        assert(checker.output.content, "COOL")
+        self.assertEquals(checker.inconsistencies, 0)
+        self.assertEqual(checker.inconsistency_messages, [])
 
-    def test_consistency_checker_missing_row(self):
+    def test_consistency_checker_missing_row_in_mongo(self):
         mocked_mongo_insert = MongoDatabase
         mocked_mongo_load_all = MongoDatabase
         mocked_mongo_find = MongoDatabase
         mocked_mongo_update_mongo = MongoDatabase
+        mocked_mongo_delete = MongoDatabase
+        mocked_mongo_prepare_data = MongoDatabase
 
         mocked_http_requests = requests
 
         mocked_tiny_load_all = TinyDatabase
+        mocked_tiny_find     = TinyDatabase
 
+        mocked_mongo_delete.delete = MagicMock(reture_value='done')
         mocked_mongo_insert.insert = MagicMock(return_value='done')
+        mocked_mongo_prepare_data.prepare_data = MagicMock(return_value='done')
+
         mocked_mongo_load_all.load_all = MagicMock(
             return_value=[{'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'}])
-        mocked_mongo_find.find = MagicMock(
-            return_value={'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'})
-        mocked_mongo_update_mongo.update = MagicMock(return_value={'2018-03-25 21:20:38', 'hello', 'bye'})
+        mocked_mongo_find.find = MagicMock().side_effect = side_affect;
+        mocked_mongo_update_mongo.update_mongo = MagicMock(return_value={'2018-03-25 21:20:38', 'hello', 'bye'})
 
-        mocked_http_requests.post = MagicMock(content={'content': "COOL"})
+        mocked_http_requests.post = mock.Mock(content='COOL')
+
         mocked_tiny_load_all.load_all = MagicMock(
             return_value=[{'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'},
-                          {'query': 'what is an elephant', 'time': '2018-03-25 21:20:39'}])
+                          {'query': 'what is an elephant', 'time': '2018-03-55 21:22:39'}])
+        mocked_tiny_find.find = MagicMock(
+            return_value={'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'})
 
         checker = ConsistencyChecker.ConsistencyChecker()
         checker.run()
 
-        assert(checker.inconsistencies, 1)
+        self.assertEquals(checker.inconsistencies, 1)
         self.assertIn('what is an elephant', checker.inconsistency_messages[0])
-        assert(checker.output.content, "COOL")
+        self.assertIn('missing row in mongodb',checker.inconsistency_messages[0])
+        mocked_mongo_prepare_data.prepare_data.assert_called_with({'query': 'what is an elephant', 'time': '2018-03-55 21:22:39'})
 
-    def test_consistency_inconsistent(self):
+    def test_consistency_inconsistent_rows(self):
         mocked_mongo_insert = MongoDatabase
         mocked_mongo_load_all = MongoDatabase
         mocked_mongo_find = MongoDatabase
         mocked_mongo_update_mongo = MongoDatabase
+        mocked_mongo_delete       = MongoDatabase
 
         mocked_http_requests = requests
 
         mocked_tiny_load_all = TinyDatabase
+        mocked_tiny_find     = TinyDatabase
 
+        mocked_mongo_delete.delete = MagicMock(return_valeu = "done")
         mocked_mongo_insert.insert = MagicMock(return_value='done')
+
         mocked_mongo_load_all.load_all = MagicMock(
             return_value=[{'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'}])
         mocked_mongo_find.find = MagicMock(
             return_value={'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'})
-        mocked_mongo_update_mongo.update = MagicMock(return_value={'2018-03-25 21:20:38', 'hello', 'bye'})
+        mocked_mongo_update_mongo.update_mongo = MagicMock(return_value={'2018-03-25 21:20:38', 'hello', 'bye'})
 
-        mocked_http_requests.post = MagicMock(content={'content': "COOL"})
+        mocked_http_requests.post = mock.Mock(content='COOL')
+
+        mocked_tiny_load_all.load_all = MagicMock(
+            return_value=[{'query': 'how to test forklift2', 'time': '2018-03-25 21:20:38'}])
+
+        # after update lookup
         mocked_tiny_load_all.load_all = MagicMock(
             return_value=[{'query': 'how to test forklift2', 'time': '2018-03-25 21:20:38'}])
 
         checker = ConsistencyChecker.ConsistencyChecker()
         checker.run()
 
-        assert (checker.inconsistencies, 1)
+        self.assertEquals(checker.inconsistencies, 1)
         self.assertIn('how to test forklift2', checker.inconsistency_messages[0])
-        assert (checker.output.content, "COOL")
+        mocked_mongo_update_mongo.update_mongo.assert_called_with('2018-03-25 21:20:38', 'how to test forklift','how to test forklift2')
+
+    def test_inconsistencies_extra_row_in_mongodb(self):
+        mocked_mongo_insert = MongoDatabase
+        mocked_mongo_load_all = MongoDatabase
+        mocked_mongo_find = MongoDatabase
+        mocked_mongo_update_mongo = MongoDatabase
+        mocked_mongo_delete = MongoDatabase
+
+        mocked_http_requests = requests
+
+        mocked_tiny_load_all = TinyDatabase
+        mocked_tiny_find = TinyDatabase
+
+        mocked_mongo_delete.delete = MagicMock(return_valeu="done")
+        mocked_mongo_insert.insert = MagicMock(return_value='done')
+
+        mocked_mongo_load_all.load_all = MagicMock(
+            return_value=[{'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'},
+                          {'query': 'how to test forklift2', 'time': '2019-03-25 21:20:38'}])
+        mocked_mongo_find.find = MagicMock(
+            return_value={'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'})
+        mocked_mongo_update_mongo.update_mongo = MagicMock(return_value={'2018-03-25 21:20:38', 'hello', 'bye'})
+
+        mocked_http_requests.post = mock.Mock(content='COOL')
+
+        mocked_tiny_load_all.load_all = MagicMock(
+            return_value=[{'query': 'how to test forklift2', 'time': '2018-03-25 21:20:38'}])
+
+        # after update lookup
+        mocked_tiny_load_all.load_all = MagicMock(
+            return_value=[{'query': 'how to test forklift', 'time': '2018-03-25 21:20:38'}])
+
+        mocked_tiny_find.find = MagicMock().side_effect = side_affect
+
+        checker = ConsistencyChecker.ConsistencyChecker()
+        checker.run()
+
+        self.assertEquals(checker.inconsistencies, 1)
+        self.assertIn('extra row in mongo', checker.inconsistency_messages[0])
+        mocked_mongo_delete.delete.assert_called_with('how to test forklift2', '2019-03-25 21:20:38')
+
