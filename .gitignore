@@ -1,4 +1,8 @@
 .coverage
+.idea
+.idea/
+workspace.xml
+db.json
 coverage/
 .installed.cfg
 engines.cfg

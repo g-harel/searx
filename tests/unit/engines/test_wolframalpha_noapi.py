@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from collections import defaultdict
 import mock
 from requests import Request
@@ -7,9 +8,21 @@ from searx.testing import SearxTestCase
 
 class TestWolframAlphaNoAPIEngine(SearxTestCase):
 
+    # test for obtain_token, currently not working/getting error
+    def test_obtain_token_mocking_works(self):
+        mocked_obtain_token = wolframalpha_noapi
+        mocked_obtain_token.obtain_token = mock.MagicMock(
+            return_value={"code": "2ae5b37a9a8f326c4c2cddf8414c06d4",
+                          "timestamp": 1519508656443
+                          })
+
+        result = wolframalpha_noapi.obtain_token()
+        self.assertEqual(result['code'], '2ae5b37a9a8f326c4c2cddf8414c06d4')
+        self.assertEqual(result['timestamp'], 1519508656443)
+
     def test_request(self):
 
-        # mocking the request from wolframalpha:
+        # Blocking to actual api call
         mocked_obtain_token = wolframalpha_noapi
         mocked_obtain_token.obtain_token = mock.MagicMock(
             return_value='test_token')
@@ -22,9 +35,11 @@ class TestWolframAlphaNoAPIEngine(SearxTestCase):
         self.assertIn(
             'https://www.wolframalpha.com/input/json.jsp', params['url'])
         self.assertIn(query, params['url'])
+        
         self.assertEqual(
             'https://www.wolframalpha.com/input/?i=test_query',
             params['headers']['Referer'])
+
 
     def test_response(self):
         self.assertRaises(AttributeError, wolframalpha_noapi.response, None)
