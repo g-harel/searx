@@ -102,7 +102,7 @@ class TestTopTen(SearxTestCase):
         mocked_tinydb.connect = MagicMock()
         mocked_mongodb.connect = MagicMock()
         mocked_tinydb.load_all = MagicMock(return_value=data)
-        mocked_mongodb.load_all= MagicMock(return_value=data)
+        mocked_mongodb.load_all = MagicMock(return_value=data)
         mocked_checker.run = MagicMock(return_value=[])
         mocked_http_requests.post = mock.Mock(content='COOL')
 
