@@ -41,8 +41,9 @@ class Database(object):
         print(mongoresults)
         print('tinydb results')
         print(results)
-        self.verify_top_ten(mongoresults, results)
+        res = self.verify_top_ten(mongoresults, results)
         checker.run()
+        return res
 
     def load_duplicates_count(self):
         results = self.load_all()
@@ -68,8 +69,10 @@ class Database(object):
             print("We all gucci")
             if mongoresults.most_common(10) == tinydb_results.most_common(10):
                 print("Top 10 results the same")
+                return "same read topten"
             else:
                 print("Top 10 results NOT the same")
+                return "not same read topten"
         else:
             print("This no good")
             print('\nInconsistencies so far: ' + str(results) + '\n')
@@ -78,6 +81,7 @@ class Database(object):
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "data": "Mongodb showed these differences :" + str(m)}),
                 headers={'Content-Type': 'application/json'})
+            return results
 
     def dict_compare(self, d1, d2):
         d1_keys = set(d1.keys())
@@ -89,7 +93,8 @@ class Database(object):
         if len(intersect_keys) == 0:
             return d1
         else:
-            modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
+            modified = {o: (d1[o], d2[o])
+                        for o in intersect_keys if d1[o] != d2[o]}
             return modified
 
 
