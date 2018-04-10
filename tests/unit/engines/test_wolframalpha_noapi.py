@@ -35,11 +35,10 @@ class TestWolframAlphaNoAPIEngine(SearxTestCase):
         self.assertIn(
             'https://www.wolframalpha.com/input/json.jsp', params['url'])
         self.assertIn(query, params['url'])
-        
+
         self.assertEqual(
             'https://www.wolframalpha.com/input/?i=test_query',
             params['headers']['Referer'])
-
 
     def test_response(self):
         self.assertRaises(AttributeError, wolframalpha_noapi.response, None)
