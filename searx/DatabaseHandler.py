@@ -4,7 +4,11 @@ from pymongo import MongoClient
 from collections import Counter
 from datetime import datetime
 import json
-import ConsistencyChecker
+import sys
+if sys.version_info[0] == 3:
+    from searx import ConsistencyChecker
+else:
+    import ConsistencyChecker
 
 
 class Database(object):
@@ -24,24 +28,22 @@ class Database(object):
     def load_all(self):
         return self.db.all()
 
-    def connect_prepare_and_insert_async(self, data):
+    def connect_prepare_and_insert_async(self, data, checker):
         self.connect()
         self.prepare_data(data)
         self.insert()
-        checker = ConsistencyChecker.ConsistencyChecker()
         checker.run()
 
-    def connect_and_read_async(self, results):
+    def connect_and_read_async(self, results, checker):
         self.connect()
         mongoresults = self.load_duplicates_count()
         print('mongoresults')
         print(mongoresults)
         print('tinydb results')
         print(results)
-        self.verify_top_ten(mongoresults, results)
-
-        checker = ConsistencyChecker.ConsistencyChecker()
+        res = self.verify_top_ten(mongoresults, results)
         checker.run()
+        return res
 
     def load_duplicates_count(self):
         results = self.load_all()
@@ -67,8 +69,10 @@ class Database(object):
             print("We all gucci")
             if mongoresults.most_common(10) == tinydb_results.most_common(10):
                 print("Top 10 results the same")
+                return "same read topten"
             else:
                 print("Top 10 results NOT the same")
+                return "not same read topten"
         else:
             print("This no good")
             print('\nInconsistencies so far: ' + str(results) + '\n')
@@ -77,6 +81,7 @@ class Database(object):
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "data": "Mongodb showed these differences :" + str(m)}),
                 headers={'Content-Type': 'application/json'})
+            return results
 
     def dict_compare(self, d1, d2):
         d1_keys = set(d1.keys())
@@ -88,7 +93,8 @@ class Database(object):
         if len(intersect_keys) == 0:
             return d1
         else:
-            modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
+            modified = {o: (d1[o], d2[o])
+                        for o in intersect_keys if d1[o] != d2[o]}
             return modified
 
 
@@ -97,10 +103,7 @@ class TinyDatabase(Database):
         self.db = TinyDB('../db.json')
         self.User = Query()
 
-    def forklift(self):
-        tinydb = TinyDatabase()
-        mongodb = MongoDatabase()
-
+    def forklift(self, tinydb, mongodb):
         tinydb.connect()
         mongodb.connect()
 

@@ -1,4 +1,9 @@
-import DatabaseHandler as db
+import sys
+if sys.version_info[0] == 3:
+    from searx import DatabaseHandler as db
+else:
+    import DatabaseHandler as db
+
 from datetime import datetime
 import requests
 import json

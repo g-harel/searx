@@ -41,8 +41,7 @@ except BaseException:
     logger.critical("cannot import dependency: pygments")
     from sys import exit
     exit(1)
-import DatabaseHandler
-import ConsistencyChecker
+
 from cgi import escape
 from datetime import datetime, timedelta
 from werkzeug.contrib.fixers import ProxyFix
@@ -73,7 +72,9 @@ from searx.autocomplete import searx_bang, backends as autocomplete_backends
 from searx.plugins import plugins
 from searx.plugins.oa_doi_rewrite import get_doi_resolver
 from searx.preferences import Preferences, ValidationException
-from answerers import Answerers, file_loader
+from searx import DatabaseHandler, ConsistencyChecker
+
+from searx.answerers import Answerers, file_loader
 from searx.url_utils import urlencode, urlparse, urljoin
 from searx.utils import new_hmac
 
@@ -480,7 +481,10 @@ def index_error(output_format, error_message):
 @app.route('/forklift')
 def forking():
     db = DatabaseHandler.TinyDatabase()
-    db.forklift()
+
+    tinydb = TinyDatabase()
+    mongodb = MongoDatabase()
+    db.forklift(tinydb, mongodb)
 
 
 @app.route('/testing')
