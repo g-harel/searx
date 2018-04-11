@@ -8,16 +8,37 @@ from searx.testing import SearxTestCase
 
 class TestWolframAlphaNoAPIEngine(SearxTestCase):
 
+    # test for obtain_token, currently not working/getting error
+    def test_obtain_token_mocking_works(self):
+        mocked_obtain_token = wolframalpha_noapi
+        mocked_obtain_token.obtain_token = mock.MagicMock(
+            return_value={"code": "2ae5b37a9a8f326c4c2cddf8414c06d4",
+                          "timestamp": 1519508656443
+                          })
+
+        result = wolframalpha_noapi.obtain_token()
+        self.assertEqual(result['code'], '2ae5b37a9a8f326c4c2cddf8414c06d4')
+        self.assertEqual(result['timestamp'], 1519508656443)
+
     def test_request(self):
+
+        # Blocking to actual api call
+        mocked_obtain_token = wolframalpha_noapi
+        mocked_obtain_token.obtain_token = mock.MagicMock(
+            return_value='test_token')
+
         query = 'test_query'
         dicto = defaultdict(dict)
         params = wolframalpha_noapi.request(query, dicto)
 
         self.assertIn('url', params)
-        self.assertIn('https://www.wolframalpha.com/input/json.jsp', params['url'])
+        self.assertIn(
+            'https://www.wolframalpha.com/input/json.jsp', params['url'])
         self.assertIn(query, params['url'])
-        self.assertEqual('https://www.wolframalpha.com/input/?i=test_query',
-                         params['headers']['Referer'])
+
+        self.assertEqual(
+            'https://www.wolframalpha.com/input/?i=test_query',
+            params['headers']['Referer'])
 
     def test_response(self):
         self.assertRaises(AttributeError, wolframalpha_noapi.response, None)
@@ -129,19 +150,25 @@ class TestWolframAlphaNoAPIEngine(SearxTestCase):
 
         self.assertEqual(len(results[0]['attributes']), 3)
         self.assertEqual('Input', results[0]['attributes'][0]['label'])
-        self.assertEqual('input_plaintext', results[0]['attributes'][0]['value'])
+        self.assertEqual('input_plaintext',
+                         results[0]['attributes'][0]['value'])
         self.assertEqual('Result', results[0]['attributes'][1]['label'])
-        self.assertEqual('result_plaintext', results[0]['attributes'][1]['value'])
-        self.assertEqual('Manipulatives illustration', results[0]['attributes'][2]['label'])
-        self.assertEqual('illustration_img_src.gif', results[0]['attributes'][2]['image']['src'])
-        self.assertEqual('illustration_img_alt', results[0]['attributes'][2]['image']['alt'])
+        self.assertEqual('result_plaintext',
+                         results[0]['attributes'][1]['value'])
+        self.assertEqual('Manipulatives illustration',
+                         results[0]['attributes'][2]['label'])
+        self.assertEqual('illustration_img_src.gif',
+                         results[0]['attributes'][2]['image']['src'])
+        self.assertEqual('illustration_img_alt',
+                         results[0]['attributes'][2]['image']['alt'])
 
         self.assertEqual(len(results[0]['urls']), 1)
 
         self.assertEqual(referer_url, results[0]['urls'][0]['url'])
         self.assertEqual('Wolfram|Alpha', results[0]['urls'][0]['title'])
         self.assertEqual(referer_url, results[1]['url'])
-        self.assertEqual('Wolfram|Alpha (input_plaintext)', results[1]['title'])
+        self.assertEqual('Wolfram|Alpha (input_plaintext)',
+                         results[1]['title'])
         self.assertIn('result_plaintext', results[1]['content'])
 
         # test calc
@@ -210,16 +237,22 @@ class TestWolframAlphaNoAPIEngine(SearxTestCase):
         self.assertEqual('integral_plaintext', results[0]['infobox'])
 
         self.assertEqual(len(results[0]['attributes']), 2)
-        self.assertEqual('Indefinite integral', results[0]['attributes'][0]['label'])
-        self.assertEqual('integral_plaintext', results[0]['attributes'][0]['value'])
-        self.assertEqual('Plot of the integral', results[0]['attributes'][1]['label'])
-        self.assertEqual('plot.gif', results[0]['attributes'][1]['image']['src'])
-        self.assertEqual('plot_alt', results[0]['attributes'][1]['image']['alt'])
+        self.assertEqual('Indefinite integral',
+                         results[0]['attributes'][0]['label'])
+        self.assertEqual('integral_plaintext',
+                         results[0]['attributes'][0]['value'])
+        self.assertEqual('Plot of the integral',
+                         results[0]['attributes'][1]['label'])
+        self.assertEqual(
+            'plot.gif', results[0]['attributes'][1]['image']['src'])
+        self.assertEqual(
+            'plot_alt', results[0]['attributes'][1]['image']['alt'])
 
         self.assertEqual(len(results[0]['urls']), 1)
 
         self.assertEqual(referer_url, results[0]['urls'][0]['url'])
         self.assertEqual('Wolfram|Alpha', results[0]['urls'][0]['title'])
         self.assertEqual(referer_url, results[1]['url'])
-        self.assertEqual('Wolfram|Alpha (integral_plaintext)', results[1]['title'])
+        self.assertEqual('Wolfram|Alpha (integral_plaintext)',
+                         results[1]['title'])
         self.assertIn('integral_plaintext', results[1]['content'])
